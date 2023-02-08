@@ -1,10 +1,77 @@
 const http = require('http');
 
 const requestListener = (request, response) => {
- response.setHeader('Content-Type', 'text/html');
+    response.setHeader('Content-Type', 'application/json');
+    response.setHeader('X-Powered-By', 'NodeJS');
 
- response.statusCode = 200;
- response.end('<h1>Hallo HTTP Server!<h1>');
+    const {method, url} = request;
+
+    if(url === '/'){
+        if(method === 'GET') {
+            response.statusCode = 200;
+            response.end(JSON.stringify({
+                message: 'Ini adalah homepage'
+            }));
+        } else {
+            response.statusCode = 400;
+            response.end(JSON.stringify({
+                message: 'Halaman tidak dapat diakses dengan $(method) request',
+            }));
+        }
+    } else if (url === '/about') {
+        if(method === 'GET') {
+            response.statusCode =200;
+            response.end(JSON.stringify({
+                message: 'Halo! Ini adalah halaman about',}));
+        } else if (method === 'POST') {
+            let body = [];
+    
+            request.on('data', (chunk) => {
+                body.push(chunk);
+            });
+    
+            request.on('end', () => {
+                body = Buffer.concat(body).toString();
+                const {name} = JSON.parse(body);
+                responseCode = 200;
+                response.end(JSON.stringify({
+                    message: `Halo, ${name}, selamat datang di halaman about`,
+                }));
+            });
+        } else {
+            response.statusCode = 400;
+            response.end(JSON.stringify({
+                message: `Halaman tidak dapat diakses menggunakan ${method} request` 
+            }));
+        } 
+    } else {
+            response.statusCode= 404;
+            response.end(JSON.stringify({
+                message: 'Halaman tidak ditemukan!'
+            }));
+    }
+    
+//  response.end('<h1>Hallo HTTP Server!<h1>');
+
+// const {method} = request;
+
+// if (method === 'GET') {
+//     response.end('<h1> Ini adalah method GET <H1>')
+// }
+
+// if(method === 'POST') {
+//     response.end('<h1> Ini adalah method POST <hq>');
+// }
+
+// if(method === 'PUT') {
+//     response.end('<h1> Ini adalah method PUT <h1>'); 
+// }
+
+// if(method === 'DELETE') {
+//     response.end('<h1> Ini adalah method DELETE <h1>');
+// }
+
+
 };
 
 const server = http.createServer(requestListener);
@@ -14,4 +81,5 @@ const host = 'localhost';
 
 server.listen(port, host, () => {
     console.log(`Server berjalan pada http://${host}:${port}`);
-})
+});
+
