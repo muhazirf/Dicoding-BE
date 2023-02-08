@@ -20,6 +20,14 @@ const routes = [
             return 'Halaman tidak ditemukan'
         }
     },
+    {
+        method:'GET',
+        path: '/helo/{username?}',
+        handler: (request, h) => {
+            const {username = "strangers"} = request.params;
+            return `Helo ${username}`;
+        }
+    },
 ];
 
 module.exports = routes;
