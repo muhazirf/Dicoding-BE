@@ -1,12 +1,16 @@
-console.log('Server has started')
-
+// console.log('Server has started');
 const hapi = require('@hapi/hapi')
-const routes = require('./routes').default
+const routes = require('./routes')
 
 const init = async () => {
   const server = hapi.server({
     port: 5000,
-    host: 'localhost'
+    host: 'localhost',
+    routes: {
+      cors: {
+        origin: ['*']
+      }
+    }
   })
 
   server.route(routes)
