@@ -28,6 +28,28 @@ const routes = [
             return `Helo ${username}`;
         }
     },
+    // {
+    //     method: 'GET',
+    //     path: '/',
+    //     handler: (request,h) =>{
+    //         const {name, location} = request.query;
+    //         return `Halo, ${name}! Apa kabar di ${location}?`;
+    //     }
+    // },
+    {
+        method: 'GET',
+        path: '/hello/{name?}',
+        handler: (request, h) => {
+            const {name = "stranger"} = request.params;
+            const {lang} = request.query;
+
+            if(lang === 'id'){
+                return `Halo, ${name}!`;
+            } else {
+                return `Hello, ${name}!`;
+            }
+        }
+    },
 ];
 
 module.exports = routes;
