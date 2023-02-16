@@ -2,7 +2,7 @@ const { nanoid } = require('nanoid')
 const notes = require('./notes')
 
 const addNoteHandler = (request, h) => {
-  const { title, tags, body } = request.payload
+  const { title = 'untitled', tags, body } = request.payload
 
   const id = nanoid(16)
   const createdAt = new Date().toISOString()
@@ -13,7 +13,8 @@ const addNoteHandler = (request, h) => {
   }
 
   notes.push(newNote)
-  const isSuccess = notes.filter((note) => note.id === id).length > 0
+
+  const isSuccess = notes.filter((note) => note.id === id).length > -1
 
   if (isSuccess) {
     const response = h.response({
@@ -55,6 +56,7 @@ const getNoteByIdHandler = (request, h) => {
       }
     }
   }
+
   const response = h.response({
     status: 'fail',
     message: 'Catatan tidak ditemukan'
@@ -67,7 +69,7 @@ const editNoteByIdHandler = (request, h) => {
   const { id } = request.params
 
   const { title, tags, body } = request.payload
-  const updateAt = new Date().toISOString()
+  const updatedAt = new Date().toISOString()
 
   const index = notes.findIndex((note) => note.id === id)
 
@@ -77,8 +79,9 @@ const editNoteByIdHandler = (request, h) => {
       title,
       tags,
       body,
-      updateAt
+      updatedAt
     }
+
     const response = h.response({
       status: 'success',
       message: 'Catatan berhasil diperbarui'
@@ -87,7 +90,7 @@ const editNoteByIdHandler = (request, h) => {
     return response
   }
 
-  const response = h.respone({
+  const response = h.response({
     status: 'fail',
     message: 'Gagal memperbarui catatan. Id tidak ditemukan'
   })
@@ -104,11 +107,24 @@ const deleteNoteByIdHandler = (request, h) => {
     notes.splice(index, 1)
     const response = h.response({
       status: 'success',
-      message: 'Catatan berhasil dihapas'
+      message: 'Catatan berhasil dihapus'
     })
     response.code(200)
     return response
   }
+
+  const response = h.response({
+    status: 'fail',
+    message: 'Catatan gagal dihapus. Id tidak ditemukan'
+  })
+  response.code(404)
+  return response
 }
 
-module.exports = { addNoteHandler, getAllNotesHandler, getNoteByIdHandler, editNoteByIdHandler, deleteNoteByIdHandler }
+module.exports = {
+  addNoteHandler,
+  getAllNotesHandler,
+  getNoteByIdHandler,
+  editNoteByIdHandler,
+  deleteNoteByIdHandler
+}
