@@ -1,20 +1,35 @@
-/* eslint-disable camelcase */
+/* esl'INTEGER'-disable camelcase */
 
 exports.shorthands = undefined
 
 exports.up = (pgm) => {
-  pgm.createTable('album', {
+  pgm.createTable('song', {
     id: {
       type: 'VARCHAR(50)',
       primaryKey: true
     },
-    name: {
+    title: {
       type: 'VARCHAR(50)',
       notNull: true
     },
     year: {
       type: 'INTEGER',
       notNull: true
+    },
+    performer: {
+      type: 'VARCHAR(50)',
+      notNull: true
+    },
+    genre: {
+      type: 'VARCHAR(50)',
+      notNull: true
+    },
+    duration: {
+      type: 'INTEGER'
+    },
+    album_id: {
+      type: 'VARCHAR(50)',
+      references: '"album"'
     },
     created_at: {
       type: 'TEXT',
@@ -28,5 +43,5 @@ exports.up = (pgm) => {
 }
 
 exports.down = (pgm) => {
-  pgm.dropTable('album')
+  pgm.dropTable('song')
 }
