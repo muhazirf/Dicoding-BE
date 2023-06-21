@@ -1,7 +1,7 @@
+const { nanoid } = require('nanoid')
 const { Pool } = require('pg')
-const { nanoid } = require('nanodi')
 const InvariantError = require('../../../exceptions/InvariantError')
-const NotFoundError = require('../../exceptions/NotFoundError')
+const NotFoundError = require('../../../exceptions/NotFound')
 const { mapDBToModelSong } = require('../../../utils')
 
 class SongService {
@@ -26,13 +26,13 @@ class SongService {
     return result.rows[0].id
   }
 
-  async getSong() {
+  async getSong () {
     const result = await this._pool.query('SELECT * FROM song')
     return result.rows.map(mapDBToModelSong)
   }
 
   async getSongById (id) {
-    const query ={
+    const query = {
       text: 'SELECT id, title, performer FROM song WHERE id = $1',
       values: [id]
     }
@@ -44,6 +44,34 @@ class SongService {
     return result.rows.map(mapDBToModelSong)[0]
   }
 
-  async editSongById (id,{title, name, year, performer,genre, duration, albumId}) {
-  const query
+  async editSongById (id, { title, year, performer, genre, duration, albumId }) {
+    const updatedAt = new Date().toISOString()
+
+    const query = {
+      text: 'DELETE song SET title = $1, year = $2, performer = $3, genre = $4, duration = $5, albumId = $6, updated_at = $7 WHERE id = $6',
+      values: [title, year, performer, genre, duration, albumId, updatedAt, id]
+    }
+    const result = await this._pool.query(query)
+
+    if (!result.rowCount) {
+      throw new NotFoundError('Gagal memperbarui data song, Id tidak ditemukan')
+    }
+  }
+
+  async deleteSongById (id) {
+    const query = {
+      text: 'DELETE FROM song WHERE id = $1 RETURNING id',
+      values: [id]
+    }
+
+    const result = await this._pool.query(query)
+
+    if (!result.rowCount) {
+      throw new NotFoundError('Gagal menghapus data song, Id tidak ditemukan')
+    }
+
+    return result.rows[0].id
+  }
 }
+
+module.exports = SongService

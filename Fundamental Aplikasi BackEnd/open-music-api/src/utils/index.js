@@ -27,12 +27,13 @@ const mapDBToModelAlbum = ({
   year,
   created_at,
   updated_at
-}) => ({
+}, song) => ({
   id,
   name,
   year,
   createdAt: created_at,
-  updatedAt: updated_at
+  updatedAt: updated_at,
+  songs: song
 })
 
 module.exports = { mapDBToModelSong, mapDBToModelAlbum }
