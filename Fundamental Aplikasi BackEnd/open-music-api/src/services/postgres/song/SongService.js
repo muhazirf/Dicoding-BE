@@ -1,7 +1,7 @@
 const { nanoid } = require('nanoid')
 const { Pool } = require('pg')
 const InvariantError = require('../../../exceptions/InvariantError')
-const NotFoundError = require('../../../exceptions/NotFound')
+const NotFoundError = require('../../../exceptions/NotFoundError')
 const { mapDBToModelSong } = require('../../../utils')
 
 class SongService {
@@ -9,13 +9,13 @@ class SongService {
     this._pool = new Pool()
   }
 
-  async addSong ({ title, year, performer, genre, duration, albumId }) {
+  async addSong ({ title, year, performer, genre, duration = null, albumId = null }) {
     const id = nanoid(16)
     const createdAt = new Date().toISOString()
     const updatedAt = createdAt
 
     const query = {
-      text: 'INSER INTO song VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id',
+      text: 'INSERT INTO song VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id',
       values: [id, title, year, performer, genre, duration, albumId, createdAt, updatedAt]
     }
     const result = await this._pool.query(query)
@@ -26,8 +26,9 @@ class SongService {
     return result.rows[0].id
   }
 
-  async getSong () {
-    const result = await this._pool.query('SELECT * FROM song')
+  async getSongs () {
+    const result = await this._pool.query('SELECT id, title, performer FROM song')
+    console.log(result.rows)
     return result.rows.map(mapDBToModelSong)
   }
 
@@ -36,6 +37,7 @@ class SongService {
       text: 'SELECT id, title, performer FROM song WHERE id = $1',
       values: [id]
     }
+    console.log(query)
     const result = await this._pool.query(query)
 
     if (!result.rows.length) {
@@ -48,14 +50,16 @@ class SongService {
     const updatedAt = new Date().toISOString()
 
     const query = {
-      text: 'DELETE song SET title = $1, year = $2, performer = $3, genre = $4, duration = $5, albumId = $6, updated_at = $7 WHERE id = $6',
+      text: 'UPDATE song SET title = $1, year = $2, performer = $3, genre = $4, duration = $5, album_id = $6, updated_at = $7 WHERE id = $8 RETURNING id',
       values: [title, year, performer, genre, duration, albumId, updatedAt, id]
     }
+    console.log(query)
     const result = await this._pool.query(query)
 
     if (!result.rowCount) {
       throw new NotFoundError('Gagal memperbarui data song, Id tidak ditemukan')
     }
+    return result.rows[0].id
   }
 
   async deleteSongById (id) {

@@ -1,14 +1,17 @@
 const ClientError = require('../../exceptions/ClientError')
+const { mapDBToModelSong } = require('../../utils')
 
 class SongHandler {
-  constructor (service) {
+  constructor (service, validator) {
     this._service = service
+    this._validator = validator
   }
 
-  postSongHandler (request, h) {
+  async postSongHandler (request, h) {
     try {
-      const songId = this._service.addSong(request.payload)
-
+      const songValidated = this._validator.validateSongPayload(request.payload)
+      console.log(songValidated)
+      const songId = await this._service.addSong(songValidated)
       const response = h.response({
         status: 'success',
         message: 'Lagu berhasil ditambahkan',
@@ -17,6 +20,7 @@ class SongHandler {
         }
       })
       response.code(201)
+      console.log(songId)
       return response
     } catch (error) {
       if (error instanceof ClientError) {
@@ -38,62 +42,41 @@ class SongHandler {
     }
   }
 
-  getSongsHandler () {
-    const songs = this._service.getSongs()
+  async getSongsHandler (request, h) {
+    const queryParams = request.query
+    const songs = await this._service.getSongs(queryParams)
 
-    return {
-      status: 'suucces',
+    const response = h.response({
+      status: 'success',
       data: {
         songs
       }
-    }
+    })
+    return response
   }
 
-  getSongByIdHandler (request, h) {
+  async getSongByIdHandler (request, h) {
     try {
       const { id } = request.params
-      const song = this._service.getSongsById(id)
-      return {
+      const song = await this._service.getSongById(id)
+
+      const resultMappingSong = mapDBToModelSong(song.id, song)
+
+      const response = h.response({
         status: 'success',
         data: {
-          song
+          song: resultMappingSong
         }
-      }
-    } catch (error) {
-      if (error instanceof ClientError) {
-        const response = h.response({
-          status: 'fail',
-          message: error.message
-        })
-        response.code(404)
-      }
-      const response = h.response({
-        status: 'error',
-        message: 'Maaf, terjadi kesalahan pada server kami.'
       })
-      response.code(500)
-      console.error(error)
+      response.code(200)
       return response
-    }
-  }
-
-  putSongByIdHandler (request, h) {
-    try {
-      const { id } = request.params
-      const { title, year, performer, genre, duration } = request.payload
-
-      this._service.editSongById(id, { title, year, performer, genre, duration })
-      return {
-        status: 'success',
-        message: 'Lagu berhasil diperbarui'
-      }
     } catch (error) {
       if (error instanceof ClientError) {
         const response = h.response({
           status: 'fail',
           message: error.message
         })
-        response.code(404)
+        response.code(error.statusCode)
         return response
       }
       const response = h.response({
@@ -106,21 +89,53 @@ class SongHandler {
     }
   }
 
-  deleteSongByIdHandler (request, h) {
+  async editSongByIdHandler (request, h) {
     try {
       const { id } = request.params
-      this._service.deleteSongById(id)
-      return {
+      const songValidated = this._validator.validateSongPayload(request.payload)
+
+      await this._service.editSongById(id, songValidated)
+      const response = h.response({
         status: 'success',
-        message: 'Lagu berhasil dihapus'
-      }
+        message: 'Lagu berhasil diperbarui'
+      })
+      return response
     } catch (error) {
       if (error instanceof ClientError) {
         const response = h.response({
           status: 'fail',
           message: error.message
         })
-        response.code(404)
+        response.code(error.statusCode)
+        return response
+      }
+      const response = h.response({
+        status: 'error',
+        message: 'Maaf, terjadi kesalahan pada server kami.'
+      })
+      response.code(500)
+      console.error(error)
+      return response
+    }
+  }
+
+  async deleteSongByIdHandler (request, h) {
+    try {
+      const { id } = request.params
+      await this._service.deleteSongById(id)
+      const response = h.response({
+        status: 'success',
+        message: 'Lagu berhasil dihapus'
+      })
+      response.code(200)
+      return response
+    } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: 'fail',
+          message: error.message
+        })
+        response.code(error.statusCode)
         return response
       }
       const response = h.response({

@@ -23,6 +23,7 @@ class AlbumService {
     if (!result.rows[0].id) {
       throw new InvariantError('Data album gagal ditambahkan')
     }
+    return result.rows[0].id
   }
 
   async getAlbum () {
@@ -36,42 +37,61 @@ class AlbumService {
   }
 
   async getAlbumById (id) {
-    const query = {
+    const queryAlbum = {
       text: 'SELECT * FROM album WHERE id = $1',
       values: [id]
     }
 
-    const result = await this._pool.query(query)
+    const resultAlbum = await this._pool.query(queryAlbum)
 
-    if (!result.rows.length) {
+    if (!resultAlbum.rows.length) {
       throw new NotFoundError('Data album tidak ditemukan')
     }
 
-    return result.rows.map(mapDBToModelAlbum)[0]
+    const album = resultAlbum.rows.map(mapDBToModelAlbum)[0]
+
+    const querySongs = {
+      text: 'SELECT * FROM song WHERE album_id = $1',
+      values: [album.id]
+    }
+    const resultSongs = await this._pool.query(querySongs)
+    console.log(querySongs)
+    if (!resultSongs.rows.length) {
+      album.songs = []
+      return album
+    }
+
+    album.songs = resultSongs.rows.map((song) => ({
+      id: song.id,
+      title: song.title,
+      performer: song.performer,
+      genre: song.genre
+    }))
+
+    return album
   }
 
   async editAlbumById (id, { name, year }) {
     const updatedAt = new Date().toISOString()
 
     const query = {
-      text: 'UPDATE album SET name = $1, year = $2, updated_at = $3',
-      values: [name, year, updatedAt]
+      text: 'UPDATE album SET name = $1, year = $2, updated_at = $3 WHERE id = $4 RETURNING id',
+      values: [name, year, updatedAt, id]
     }
 
     const result = await this._pool.query(query)
-
     if (!result.rowCount) {
       throw new NotFoundError('Gagal memperbarui data album, Id tidak ditemukan')
     }
+    return result.rows[0].id
   }
 
   async deleteAlbumById (id) {
     const query = {
-      text: 'DELETE FROM album WHERE id = $1',
+      text: 'DELETE FROM album WHERE id = $1 RETURNING id',
       values: [id]
     }
     const result = await this._pool.query(query)
-
     if (!result.rowCount) {
       throw new NotFoundError('Gagal menghapus data album, Id tidak ditemukan')
     }

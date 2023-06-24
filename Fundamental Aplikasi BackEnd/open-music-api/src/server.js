@@ -12,11 +12,10 @@ const { AlbumValidator } = require('./validator/album')
 const ClientError = require('./exceptions/ClientError')
 
 const init = async () => {
-  const songService = new SongService()
   const albumService = new AlbumService()
-
-  const songValidator = new SongValidator()
   const albumValidator = new AlbumValidator()
+  const songService = new SongService()
+  const songValidator = new SongValidator()
 
   const server = Hapi.server({
     host: process.env.HOST,
@@ -78,6 +77,9 @@ const init = async () => {
 
     return h.continue
   })
+
+  await server.start()
+  console.log('Server running on %s', server.info.uri)
 }
 
 init()
