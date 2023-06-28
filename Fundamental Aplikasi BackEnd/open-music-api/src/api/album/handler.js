@@ -1,9 +1,12 @@
 const { mapDBToModelAlbum } = require('../../utils/index')
 const ClientError = require('../../exceptions/ClientError')
+const autoBind = require('auto-bind')
 class AlbumHandler {
   constructor (service, validator) {
     this._service = service
     this._validator = validator
+
+    autoBind(this)
   }
 
   async postAlbumHandler (request, h) {

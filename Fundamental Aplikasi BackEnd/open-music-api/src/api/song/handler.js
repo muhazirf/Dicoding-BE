@@ -1,10 +1,12 @@
 const ClientError = require('../../exceptions/ClientError')
-const { mapDBToModelSong } = require('../../utils')
+const autoBind = require('auto-bind');
 
 class SongHandler {
   constructor (service, validator) {
     this._service = service
     this._validator = validator
+
+    autoBind(this)
   }
 
   async postSongHandler (request, h) {
