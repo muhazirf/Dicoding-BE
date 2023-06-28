@@ -28,12 +28,10 @@ class AlbumHandler {
       const { id } = request.params
       const album = await this._service.getAlbumById(id)
 
-      const resultMappingAlbum = mapDBToModelAlbum(album.id, album)
-
       const response = h.response({
         status: 'success',
         data: {
-          album: resultMappingAlbum
+          album
         }
       })
       response.code(200)

@@ -43,8 +43,8 @@ class SongHandler {
   }
 
   async getSongsHandler (request, h) {
-    const queryParams = request.query
-    const songs = await this._service.getSongs(queryParams)
+    const { title, performer } = request.query
+    const songs = await this._service.getSongs({ title, performer })
 
     const response = h.response({
       status: 'success',
@@ -59,13 +59,10 @@ class SongHandler {
     try {
       const { id } = request.params
       const song = await this._service.getSongById(id)
-
-      const resultMappingSong = mapDBToModelSong(song.id, song)
-
       const response = h.response({
         status: 'success',
         data: {
-          song: resultMappingSong
+          song
         }
       })
       response.code(200)
