@@ -3,20 +3,16 @@
 exports.shorthands = undefined
 
 exports.up = pgm => {
-  pgm.createTable('users', {
+  pgm.createTable('collaborations', {
     id: {
       type: 'varchar(50)',
       primaryKey: true
     },
-    username: {
+    playlist_id: {
       type: 'varchar(50)',
       notNull: true
     },
-    password: {
-      type: 'text',
-      notNull: true
-    },
-    fullname: {
+    user_id: {
       type: 'varchar(50)',
       notNull: true
     },
@@ -31,6 +27,4 @@ exports.up = pgm => {
   })
 }
 
-exports.down = pgm => {
-  pgm.dropTable('users')
-}
+exports.down = pgm => { pgm.dropTable('collaborations') }
