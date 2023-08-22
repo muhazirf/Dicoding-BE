@@ -16,6 +16,18 @@ exports.up = pgm => {
       type: 'VARCHAR(50)',
       notNull: true
     },
+    user_id: {
+      type: 'varchar(50)',
+      notNull: true
+    },
+    action: {
+      type: 'text',
+      notNull: true
+    },
+    time: {
+      type: 'text',
+      notNull: true
+    },
     created_at: {
       type: 'VARCHAR(50)',
       notNull: true
