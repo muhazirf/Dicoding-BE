@@ -15,6 +15,14 @@ exports.up = pgm => {
     song_id: {
       type: 'varchar(50)',
       notNull: true
+    },
+    created_at: {
+      type: 'varchar(50)',
+      notNull: true
+    },
+    updated_at: {
+      type: 'varchar(50)',
+      notNull: true
     }
   })
 }

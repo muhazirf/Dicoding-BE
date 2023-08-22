@@ -7,6 +7,14 @@ exports.up = pgm => {
     token: {
       type: 'text',
       notNull: true
+    },
+    created_at: {
+      type: 'varchar(50)',
+      notNull: true
+    },
+    updated_at: {
+      type: 'varchar(50)',
+      notNull: false
     }
   })
 }
