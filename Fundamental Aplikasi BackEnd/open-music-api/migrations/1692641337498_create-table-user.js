@@ -12,12 +12,12 @@ exports.up = pgm => {
       type: 'varchar(50)',
       notNull: true
     },
-    password: {
-      type: 'text',
-      notNull: true
-    },
     fullname: {
       type: 'varchar(50)',
+      notNull: true
+    },
+    password: {
+      type: 'text',
       notNull: true
     },
     created_at: {

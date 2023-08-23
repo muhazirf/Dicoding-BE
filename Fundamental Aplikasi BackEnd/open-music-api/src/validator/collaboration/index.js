@@ -13,4 +13,4 @@ class CollaborationValidator {
   }
 }
 
-module.exports = CollaborationValidator
+module.exports = { CollaborationValidator }

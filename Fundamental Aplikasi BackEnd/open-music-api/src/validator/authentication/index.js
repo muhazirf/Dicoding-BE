@@ -38,4 +38,4 @@ class AuthenticationValidator {
   }
 }
 
-module.exports = AuthenticationValidator
+module.exports = { AuthenticationValidator }

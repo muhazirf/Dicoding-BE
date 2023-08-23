@@ -23,4 +23,4 @@ class PlaylistValidator {
   }
 }
 
-module.exports = PlaylistValidator
+module.exports = { PlaylistValidator }
