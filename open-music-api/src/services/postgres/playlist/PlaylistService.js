@@ -133,6 +133,7 @@ class PlaylistService {
       text: 'INSERT INTO playlists VALUES($1, $2, $3, $4, $5) RETURNING id',
       values: [idPlaylist, name, owner, createdAt, createdAt]
     }
+    console.log(query)
 
     const { rows } = await this._pool.query(query)
 

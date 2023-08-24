@@ -9,12 +9,16 @@ exports.up = pgm => {
       primaryKey: true
     },
     playlist_id: {
-      type: 'varchar(50)',
-      notNull: true
+      type: 'varchar(30)',
+      references: '"playlists"',
+      onDelete: 'cascade',
+      onUpdate: 'cascade'
     },
     song_id: {
-      type: 'varchar(50)',
-      notNull: true
+      type: 'varchar(30)',
+      references: '"song"',
+      onDelete: 'cascade',
+      onUpdate: 'cascade'
     },
     created_at: {
       type: 'varchar(50)',

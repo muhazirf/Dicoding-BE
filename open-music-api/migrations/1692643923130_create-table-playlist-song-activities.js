@@ -10,15 +10,24 @@ exports.up = pgm => {
     },
     playlist_id: {
       type: 'VARCHAR(50)',
-      notNull: true
+      notNull: true,
+      references: '"playlists"',
+      onDelete: 'cascade',
+      onUpdate: 'cascade'
     },
     song_id: {
       type: 'VARCHAR(50)',
-      notNull: true
+      notNull: true,
+      references: '"song"',
+      onDelete: 'cascade',
+      onUpdate: 'cascade'
     },
     user_id: {
       type: 'varchar(50)',
-      notNull: true
+      notNull: true,
+      references: '"users"',
+      onDelete: 'cascade',
+      onUpdate: 'cascade'
     },
     action: {
       type: 'text',
