@@ -188,8 +188,6 @@ const editBookByIdHandler = (request, h) => {
 
   const index = books.findIndex((book) => book.id === bookId)
 
-  console.log(index)
-
   if (name === undefined) {
     const response = h.response({
       status: 'fail',

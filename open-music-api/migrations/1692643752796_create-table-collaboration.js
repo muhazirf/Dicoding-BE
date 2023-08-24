@@ -3,7 +3,7 @@
 exports.shorthands = undefined
 
 exports.up = pgm => {
-  pgm.createTable('playlist_songs', {
+  pgm.createTable('collaborations', {
     id: {
       type: 'varchar(50)',
       primaryKey: true
@@ -12,7 +12,7 @@ exports.up = pgm => {
       type: 'varchar(50)',
       notNull: true
     },
-    song_id: {
+    user_id: {
       type: 'varchar(50)',
       notNull: true
     },
@@ -27,6 +27,4 @@ exports.up = pgm => {
   })
 }
 
-exports.down = pgm => {
-  pgm.dropTable('playlist_songs')
-}
+exports.down = pgm => { pgm.dropTable('collaborations') }
