@@ -2,11 +2,80 @@ const { nanoid } = require('nanoid')
 const { Pool } = require('pg')
 const InvariantError = require('../../../exceptions/InvariantError')
 const NotFoundError = require('../../../exceptions/NotFoundError')
-const { mapDBToModelAlbum } = require('../../../utils')
+const { mapDBToModelAlbum, mapDBToModelAlbumLike } = require('../../../utils')
+const CacheService = require('../../cache/CacheService')
 
 class AlbumService {
-  constructor () {
+  constructor (CachceService) {
     this._pool = new Pool()
+    this._cacheService = CacheService
+  }
+
+  async getAlbumLikes (userId) {
+    try {
+      const result = await this._cacheService.get(`albums:${userId}`)
+      return JSON.parse(result)
+    } catch (error) {
+      const query = {
+        text: `SELECT album.id, album.name, album.year, album.performer
+        FROM album
+        LEFT JOIN user_album_likes ON user_album_likes.album_id = album.id
+        WHERE user_album_likes.user_id = $1`,
+        values: [userId]
+      }
+
+      const result = await this._pool.query(query)
+      const mappedResult = mapDBToModelAlbumLike(result.rows[0].count)
+      await this._cacheService.set(`albums:${userId}`, JSON.stringify(mappedResult))
+      return { result: mappedResult }
+    }
+  }
+
+  async likesAlbum (userId, albumId) {
+    const id = nanoid(16)
+    const createdAt = new Date().toISOString()
+    const updatedAt = createdAt
+
+    const query = {
+      text: 'INSERT INTO user_album_likes VALUES($1, $2, $3, $4, $5) RETURNING id',
+      values: [id, userId, albumId, createdAt, updatedAt]
+    }
+
+    const result = await this._pool.query(query)
+
+    if (!result.rows[0].id) {
+      throw new InvariantError('Gagal menambahkan like album')
+    }
+
+    await this._cacheService.delete(`albums:${userId}`)
+  }
+
+  async unlikesAlbum (userId, albumId) {
+    const query = {
+      text: 'DELETE FROM user_album_likes WHERE user_id = $1 AND album_id = $2 RETURNING id',
+      values: [userId, albumId]
+    }
+
+    const result = await this._pool.query(query)
+
+    if (!result.rows.length) {
+      throw new InvariantError('Gagal menghapus like album')
+    }
+
+    await this._cacheService.delete(`albums:${userId}`)
+  }
+
+  async verifyLikeAlbum (userId, albumId) {
+    const query = {
+      text: 'SELECT * FROM user_album_likes WHERE user_id = $1 AND album_id = $2',
+      values: [userId, albumId]
+    }
+
+    const result = await this._pool.query(query)
+
+    if (!result.rows.length) {
+      throw new InvariantError('Album sudah dilike')
+    }
   }
 
   async addAlbum ({ name, year }) {
@@ -15,8 +84,8 @@ class AlbumService {
     const updatedAt = createdAt
 
     const query = {
-      text: 'INSERT INTO album VALUES($1, $2, $3, $4, $5) RETURNING id',
-      values: [id, name, year, createdAt, updatedAt]
+      text: 'INSERT INTO album VALUES($1, $2, $3, $4, $5, $6) RETURNING id',
+      values: [id, name, year, null, createdAt, updatedAt]
     }
     const result = await this._pool.query(query)
 
@@ -24,6 +93,21 @@ class AlbumService {
       throw new InvariantError('Data album gagal ditambahkan')
     }
     return result.rows[0].id
+  }
+
+  async addCoverAlbum (id, coverUrl) {
+    const updatedAt = new Date().toISOString()
+
+    const query = {
+      text: 'UPDATE albums SET cover = $1, updated_at = $2 WHERE id = $3 RETURNING id',
+      values: [coverUrl, updatedAt, id]
+    }
+
+    const result = await this._pool.query(query)
+
+    if (!result.rows.length) {
+      throw new NotFoundError('Gagal memperbarui cover album, Id tidak ditemukan')
+    }
   }
 
   async getAlbum () {

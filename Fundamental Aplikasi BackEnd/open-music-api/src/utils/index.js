@@ -3,6 +3,7 @@ const mapDBToModelSong = ({
   id,
   title,
   year,
+  cover,
   performer,
   genre,
   duration,
@@ -13,6 +14,7 @@ const mapDBToModelSong = ({
   id,
   title,
   year,
+  coverUrl: (cover === null) ? null : cover,
   performer,
   genre,
   duration,
@@ -51,4 +53,8 @@ const mapDBToModelPlaylistActivity = (playlistId, activities) => ({
   activities
 })
 
-module.exports = { mapDBToModelSong, mapDBToModelAlbum, mapDBToModelPlaylistSong, mapDBToModelPlaylistActivity }
+const mapDBToModelAlbumLike = (count) => ({
+  likes: parseInt(count)
+})
+
+module.exports = { mapDBToModelSong, mapDBToModelAlbum, mapDBToModelPlaylistSong, mapDBToModelPlaylistActivity, mapDBToModelAlbumLike }

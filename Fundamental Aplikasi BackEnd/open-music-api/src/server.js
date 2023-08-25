@@ -2,11 +2,23 @@ require('dotenv').config()
 
 const Hapi = require('@hapi/hapi')
 const Jwt = require('@hapi/jwt')
+const config = require('./utils/config')
 
 // Albums
 const albums = require('./api/album')
 const AlbumService = require('./services/postgres/album/AlbumService')
 const { AlbumValidator } = require('./validator/album')
+
+// Storage
+const StorageService = require('./services/storage/StorageService')
+
+// Cache
+const CacheService = require('./services/cache/CacheService')
+
+// Exports Plugin
+const _exports = require('./api/export')
+const ProducerService = require('./services/export/ExportService')
+const { ExportPlaylistValidator } = require('./validator/export')
 
 // Songs
 const songs = require('./api/song')
@@ -41,6 +53,7 @@ const { CollaborationValidator } = require('./validator/collaboration')
 const ClientError = require('./exceptions/ClientError')
 
 const init = async () => {
+  const cacheService = new CacheService()
   const albumService = new AlbumService()
   const albumValidator = new AlbumValidator()
   const songService = new SongService()
@@ -54,6 +67,7 @@ const init = async () => {
   const playlistService = new PlaylistService(songService, activityService, collaborationService)
   const authenticationValidator = new AuthenticationValidator()
   const authenticationService = new AuthenticationService()
+  const albumStorageService = new StorageService()
 
   const server = Hapi.server({
     host: process.env.HOST,
@@ -91,7 +105,8 @@ const init = async () => {
     {
       plugin: albums,
       options: {
-        service: albumService,
+        albumService,
+        storageService: albumStorageService,
         validator: albumValidator
       }
     },
@@ -131,6 +146,14 @@ const init = async () => {
         collaborationService,
         playlistService,
         validator: collaborationValidator
+      }
+    },
+    {
+      plugin: _exports,
+      options: {
+        exportService: ProducerService,
+        playlistService,
+        validator: ExportPlaylistValidator
       }
     }
   ])
